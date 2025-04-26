@@ -7,7 +7,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "africastalking": "^1.1.0",
+    "africastalking": "^0.4.2",
     "express": "^4.18.2"
   }
 }
