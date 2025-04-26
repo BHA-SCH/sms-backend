@@ -1,40 +1,52 @@
+
 const express = require('express');
+const africastalking = require('africastalking');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const Africastalking = require('africastalking');
+require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 10000;
 
+// Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Initialize Africa's Talking
-const africastalking = Africastalking({
+// Africa's Talking Setup
+const AT = africastalking({
     apiKey: process.env.AT_API_KEY,
     username: process.env.AT_USERNAME
 });
 
-const sms = africastalking.SMS;
-
-// API endpoint to send SMS
-app.post('/send-sms', async (req, res) => {
+// Route to send SMS
+app.post('/sendsms', async (req, res) => {
     const { phoneNumber, message } = req.body;
+
+    if (!phoneNumber || !message) {
+        return res.status(400).json({ error: 'Phone number and message are required' });
+    }
+
     try {
-        const response = await sms.send({
+        const result = await AT.SMS.send({
             to: [phoneNumber],
-            message
+            message: message,
+            from: 'Sandbox'  // use your sandbox sender ID
         });
-        res.status(200).send(response);
+
+        res.status(200).json({ success: true, result });
     } catch (error) {
-        res.status(500).send({ error: error.toString() });
+        console.error(error);
+        res.status(500).json({ success: false, error: error.toString() });
     }
 });
 
+// Home route
 app.get('/', (req, res) => {
-    res.send('SMS Backend is running');
+    res.send('SMS Backend is Running');
 });
 
+// Start server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
